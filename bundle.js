@@ -40098,10 +40098,10 @@
 	    window.addEventListener('resize', this.handleResize);
 	    window.addEventListener('scroll', this.handleLoad);
 
-	    GridActions.getPosts(0, (this.gridResize()*4)+2);
+	    GridActions.getPosts(0, (this.gridResize()*2)+1);
 	    this.setState({
 	      rowMax : this.gridResize(),
-	      currentLimit : (this.gridResize()*4)+2
+	      currentLimit : (this.gridResize()*2)+1
 	    });
 	  },
 	  componentWillUnmount: function() {
