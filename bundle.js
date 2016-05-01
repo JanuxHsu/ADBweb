@@ -40098,7 +40098,7 @@
 	    window.addEventListener('resize', this.handleResize);
 	    window.addEventListener('scroll', this.handleLoad);
 
-	    GridActions.getPosts(0, (this.gridResize()*2)+1);
+	    GridActions.getPosts(0, (this.gridResize()*6)+3);
 	    this.setState({
 	      rowMax : this.gridResize(),
 	      currentLimit : (this.gridResize()*2)+1
@@ -40444,6 +40444,9 @@
 	  _onChange: function(){
 
 	  },
+	  toMovie: function(id){
+	    return PathConstants.baseUrl + '/#/' + id;
+	  },
 	  render: function(){
 	    var styles = {
 	      height : HexConstants.HexHeight,
@@ -40476,7 +40479,7 @@
 	    var url = this.props.data.IMAGE;
 	    return (
 	      React.createElement("div", {className: 'hex fadeIn fade-in ' + random, style: styles}, 
-	          React.createElement("a", {className: "hexIn", href: "#"}, 
+	          React.createElement("a", {className: "hexIn", href: this.toMovie(this.props.data.MID)}, 
 	              React.createElement("img", {style: imgStyle, src: url, alt: ""}), 
 	              React.createElement("h1", null, this.props.data.NAME), 
 	              React.createElement("p", null, this.props.data.DIRECTOR)
