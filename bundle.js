@@ -40352,7 +40352,7 @@
 	        ), 
 	        React.createElement("div", {className: "gridControll"}, 
 	          React.createElement("div", {className: "gridControll_Item"}, 
-	            React.createElement(SimpleSelect, {defaultValue: ctx.state.defaultGenre, onValueChange: function(value){ ctx.handleGenre(value); }, className: "genreDropdown", options: this.state.genres, placeholder: "Select a Genre", theme: "material"})
+	            React.createElement(SimpleSelect, {defaultValue: ctx.state.defaultGenre, onValueChange: function(value){ ctx.handleGenre(value); }, className: "genreDropdown fade-in", options: this.state.genres, placeholder: "Select a Genre", theme: "material"})
 	          )
 	        ), 
 
@@ -47111,6 +47111,11 @@
 	    var width = this.state.windowWidth;
 	    if (data) {
 	      var movie = data[0];
+	      console.log(movie);
+
+	      var comments = data[1];
+	      //console.log(comments);
+
 	      var genreList = movie.GENRE.map(function(item, i){
 	        var aStyle = {
 	          marginRight:'0.6vmin',
@@ -47132,8 +47137,6 @@
 	        }
 	        return jsx;
 	      })();
-	      var comments = data[1];
-	      console.log(comments);
 
 	      var posterBack = {
 	        backgroundImage : 'url('+ movie.IMAGE +')',
@@ -47150,7 +47153,7 @@
 	                    AddCollection, React.createElement("b", null, (movie.RATE_CAL == 'None')?('0.0'):movie.RATE_CAL)
 	                ), 
 	                React.createElement("div", {className: "ratingBox"}, 
-	                  React.createElement(MouseRatingPad, {status: (localStorage.uid) ? 'Your Score：' + movie.RATE_CAL : 'Login to Rate!', mid: movie.MID, innerId: 'innerId-' + movie.MID})
+	                  React.createElement(MouseRatingPad, {status: movie.USER_R, mid: movie.MID, innerId: 'innerId-' + movie.MID})
 	                )
 	              )
 	            ), 
@@ -47380,24 +47383,33 @@
 	    MovieActions.RateMovie(this.props.mid, Math.floor((this.state.score/10)) + 1);
 	  },
 	  render: function(){
-	    var flag = (this.props.status == 'Your Score：None') ? true : false;
+
+	    var flag = this.props.status;
 	    var width = this.state.score + '%';
 	    var picker = Math.floor((this.state.score/10)) + 1;
 	    var barStatus = {
 	      width : width,
 	      borderColor : 'rgb('+ picker*27 +', '+ picker*21 +', '+ picker*6 +')'
 	    };
-	    if (flag) {
-	      return(
-	        React.createElement("div", {className: "statusBarBox", id: this.props.innerId, onClick: this.Rating, onMouseLeave: this.handleMousemout}, 
-	          React.createElement("p", null, picker), 
-	          React.createElement("div", {style: barStatus, className: "theBar"})
-	        )
-	      );
+	    if (!flag) {
+	      if (localStorage.uid) {
+	        return(
+	          React.createElement("div", {className: "statusBarBox", id: this.props.innerId, onClick: this.Rating, onMouseLeave: this.handleMousemout}, 
+	            React.createElement("p", null, picker), 
+	            React.createElement("div", {style: barStatus, className: "theBar"})
+	          )
+	        );
+	      } else {
+	        return(
+	          React.createElement("div", {className: "statusBarBox", id: this.props.innerId}, 
+	            React.createElement("p", null, "Login To Rate!")
+	          )
+	        );
+	      }
 	    } else {
 	      return(
 	        React.createElement("div", {className: "statusBarBox", id: this.props.innerId}, 
-	          React.createElement("p", null, this.props.status)
+	          React.createElement("p", null, 'You score this ' + this.props.status)
 	        )
 	      );
 	    }
