@@ -40305,7 +40305,6 @@
 
 	    }
 	    return ({
-	      posts : [],
 	      currentGenre : param,
 	      defaultGenre : defaultGenre
 	    });
@@ -40498,7 +40497,10 @@
 	var CHANGE_EVENT = 'change';
 
 	//private variable
-	var _PostData = [];
+	var _PostsData = {
+	  status : false,
+	  data : null
+	};
 	var _loadInfo = {};
 	var _Genres = [];
 
@@ -40518,8 +40520,12 @@
 	  return this.removeListener(CHANGE_EVENT, listener);
 	};
 
+	GridStore.prototype.getPostsStatus = function () {
+	  return _PostsData.status;
+	};
+
 	GridStore.prototype.getPosts = function () {
-	  return _PostData;
+	  return _PostsData.data;
 	};
 
 	GridStore.prototype.getLoadInfo = function () {
@@ -40538,7 +40544,8 @@
 	  var action = payload.action;
 	  switch(action) {
 	    case 'getPosts':
-	      _PostData = JSON.parse(payload.posts);
+	      _PostsData.status = true;
+	      _PostsData.data = JSON.parse(payload.posts);
 	      gridStore.emitChange();
 	      break;
 
@@ -40609,13 +40616,13 @@
 	var HexagonContainer = React.createClass({displayName: "HexagonContainer",
 	  getInitialState: function() {
 	    return ({
-	      posts : []
+	      postsStatus : false
 	    });
 	  },
 	  componentDidMount: function() {
 	    GridStore.addChangeListener(this._onChange);
 	    this.setState({
-	      posts : GridStore.getPosts()
+	      postsStatus : GridStore.getPostsStatus()
 	    })
 	  },
 	  componentWillUnmount: function() {
@@ -40623,7 +40630,7 @@
 	  },
 	  _onChange: function(){
 	    this.setState({
-	      posts : GridStore.getPosts()
+	      postsStatus : GridStore.getPostsStatus()
 	    });
 	  },
 	  GridDistribution: function(posts){
@@ -40632,7 +40639,7 @@
 	    return slicedData;
 	  },
 	  render: function(){
-	    var layout = this.GridDistribution(this.state.posts);
+	    var layout = (this.state.postsStatus) ? this.GridDistribution(GridStore.getPosts()) : [];
 	    var rowNum = this.props.rowMax || 0;
 	    var result = [];
 	    var counter = 0;
@@ -47144,18 +47151,23 @@
 	  },
 	  _onChange: function() {
 	    this.setState({
-	      movie : MovieStore.getMovie()
+	      movieStatus : MovieStore.getMovieStatus()
 	    });
 	  },
 	  handleAddCollection: function(){
 	    var param = location.href.split('/#/movie/')[1];
 	    MovieActions.AddToCollection(param);
 	  },
+	  handleRemoveCollection : function(){
+	    var param = location.href.split('/#/movie/')[1];
+	    MovieActions.RemoveFromCollection(param);
+	  },
 	  render: function(){
 	    var ctx = this;
-	    var data = this.state.movie;
+	    var movieStatus = this.state.movieStatus;
 	    var width = this.state.windowWidth;
-	    if (data) {
+	    if (movieStatus) {
+	      var data = MovieStore.getMovie();
 	      var movie = data[0];
 	      var comments = data[1].COMMENTS;
 
@@ -47175,7 +47187,7 @@
 	        if (localStorage.uid) {
 	          jsx = React.createElement("span", {onClick: ctx.handleAddCollection, className: "AddToCollection glyphicon glyphicon-heart-empty"});
 	          if(movie.USER_C){
-	            jsx = React.createElement("span", {className: "AddToCollection glyphicon glyphicon-heart"});
+	            jsx = React.createElement("span", {onClick: ctx.handleRemoveCollection, className: "AddToCollection glyphicon glyphicon-heart"});
 	          }
 	        }
 	        return jsx;
@@ -47308,6 +47320,27 @@
 				}
 			});
 		},
+		RemoveFromCollection: function(mid){
+			var data = {
+				UID : localStorage.uid,
+				MID : mid
+			};
+			console.log(data);
+			$.ajax({
+				url : PathConstants.baseUrl + '/collections/delete/',
+				method : 'POST',
+				data :  data,
+				dataType : 'jSON',
+				success : function(data) {
+					AppDispatcher.handleViewAction('RemoveCollection', {
+						result : data,
+					});
+				},
+				error : function(err) {
+					console.error(err);
+				}
+			});
+		},
 		newComment: function(uid, mid, comment){
 			var data = {
 				UID : uid,
@@ -47350,7 +47383,10 @@
 	var CHANGE_EVENT = 'change';
 
 	//private variable
-	var _Movie;
+	var _Movie = {
+	  status : false,
+	  data : null
+	};
 
 
 	var MovieStore = function(){};
@@ -47368,8 +47404,12 @@
 	  return this.removeListener(CHANGE_EVENT, listener);
 	};
 
+	MovieStore.prototype.getMovieStatus = function () {
+	  return _Movie.status;
+	};
+
 	MovieStore.prototype.getMovie = function () {
-	  return _Movie;
+	  return _Movie.data;
 	};
 
 
@@ -47380,7 +47420,8 @@
 	  var action = payload.action;
 	  switch(action) {
 	    case 'theMovie':
-	      _Movie = JSON.parse(payload.movie);
+	      _Movie.status = true;
+	      _Movie.data = JSON.parse(payload.movie);
 	      movieStore.emitChange();
 	      break;
 
@@ -47389,6 +47430,10 @@
 	      MovieActions.getMovie(param);
 	      break;
 	    case 'AddCollection':
+	      var param = location.href.split('/#/movie/')[1];
+	      MovieActions.getMovie(param);
+	      break;
+	    case 'RemoveCollection':
 	      var param = location.href.split('/#/movie/')[1];
 	      MovieActions.getMovie(param);
 	      break;
